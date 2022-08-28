@@ -1,34 +1,19 @@
-import type { NextPage } from 'next'
-import Image from 'next/image'
-import styled from 'styled-components'
-import { useEffect, useMemo, useRef, useState } from "react";
+import type { NextPage } from "next";
+import Image from "next/image";
+import styled from "styled-components";
+import { useRef } from "react";
+import useElementOnScreen from "../hooks/useElementOnScreen";
 
 const Home: NextPage = () => {
   const targetRef = useRef(null);
-  const [isVisible, setIsVisible] = useState(false);
-
-  const callbackFunction = (entries : any) => {
-    const [entry] = entries; // const entry = entires[0];
-    setIsVisible(entry.isIntersecting);
-  }
-
-  const options = useMemo(() => {
-    return {
+  const { isVisible } = useElementOnScreen({
+    targetRef,
+    options: {
       root: null,
       rootMargin: "0px",
       threshold: 0.3,
-    };
-  }, [])
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(callbackFunction, options);
-    const currentTarget = targetRef.current;
-    if(currentTarget) observer.observe(currentTarget);
-
-    return () => {
-      if(currentTarget) observer.unobserve(currentTarget);
-    }
-  }, [targetRef, options])
+    },
+  });
 
   return (
     <Container>
@@ -38,18 +23,22 @@ const Home: NextPage = () => {
         <Image
           src={"/images/profile.jpg"}
           alt="profile"
-          width={300}
-          height={300}
+          width={500}
+          height={500}
           objectFit="fill"
         />
       </ImageWrapper>
     </Container>
   );
-}
+};
 
 export default Home;
 
 const Container = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
   background-color: #133158;
 `;
 
@@ -60,11 +49,12 @@ const Title = styled.h1`
   top: 0;
   left: 0;
   width: 100%;
+  z-index: 99;
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100px;
-  background-color: #90c7e0;
+  background-color: #90c7e080;
 `;
 
 const Gap = styled.div`
