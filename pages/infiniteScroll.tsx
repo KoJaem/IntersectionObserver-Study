@@ -1,15 +1,15 @@
 /* eslint-disable @next/next/no-img-element */
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useState } from "react";
 import axios from "axios";
 import styled, { keyframes } from "styled-components";
-import Image from "next/image";
 import loadingImg from "assets/images/loading.gif";
 
 export default function InfiniteScroll() {
   const [photos, setPhotos] = useState([]);
   const [pageNumber, setPageNumber] = useState(1);
   const [loading, setLoading] = useState(false);
+  const loadingRef = useRef(null);
 
   const fetchPhotos = async (pageNumber: number) => {
     const Access_key = process.env.NEXT_PUBLIC_API_KEY;
@@ -17,19 +17,38 @@ export default function InfiniteScroll() {
       `https://api.unsplash.com/photos/?client_id=${Access_key}&page=${pageNumber}&per_page=10`
     );
     setPhotos(photo => photo.concat(data));
+    setLoading(true);
   };
-
-  useEffect(() => {
-    console.log(photos);
-  }, [photos]);
 
   useEffect(() => {
     fetchPhotos(pageNumber);
   }, [pageNumber]);
 
+  useEffect(() => {
+    console.log(loading)
+  }, [loading])
+
+  useEffect(() => {
+    if (loading) {
+      const observer = new IntersectionObserver(
+        entries => {
+          const [entry] = entries;
+          if (entry.isIntersecting) {
+            loadMore();
+          }
+        },
+        { threshold: 1 }
+      );
+      const pageEnd = loadingRef.current;
+      if (pageEnd) {
+        observer.observe(pageEnd);
+      }
+    }
+  }, [loading]);
+
   const loadMore = () => {
-    setPageNumber(prev => prev +1);
-  }
+    setPageNumber(prev => prev + 1);
+  };
 
   return (
     <Container>
@@ -43,7 +62,9 @@ export default function InfiniteScroll() {
       ))}
       <LoadingImg src={loadingImg.src} alt="loading" />
       <h3>{photos.length}</h3>
-      <LoadingButton onClick={loadMore}>Load More</LoadingButton>
+      <LoadingButton onClick={loadMore} ref={loadingRef}>
+        Load More
+      </LoadingButton>
     </Container>
   );
 }
@@ -84,7 +105,7 @@ const Photo = styled.div`
   overflow: hidden;
   animation: ${scale} 0.5s linear;
   img {
-    width : 100%;
+    width: 100%;
     display: block;
     max-width: 150px;
     height: 100%;
@@ -111,4 +132,3 @@ const LoadingButton = styled.button`
   margin: 10px;
   cursor: pointer;
 `;
-
