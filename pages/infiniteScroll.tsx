@@ -8,7 +8,6 @@ import loadingImg from "assets/images/loading.gif";
 export default function InfiniteScroll() {
   const [photos, setPhotos] = useState([]);
   const [pageNumber, setPageNumber] = useState(1);
-  const [loading, setLoading] = useState(false);
   const loadingRef = useRef(null);
 
   const fetchPhotos = async (pageNumber: number) => {
@@ -17,38 +16,36 @@ export default function InfiniteScroll() {
       `https://api.unsplash.com/photos/?client_id=${Access_key}&page=${pageNumber}&per_page=10`
     );
     setPhotos(photo => photo.concat(data));
-    setLoading(true);
   };
 
   useEffect(() => {
     fetchPhotos(pageNumber);
   }, [pageNumber]);
 
-  useEffect(() => {
-    console.log(loading)
-  }, [loading])
-
-  useEffect(() => {
-    if (loading) {
-      const observer = new IntersectionObserver(
-        entries => {
-          const [entry] = entries;
-          if (entry.isIntersecting) {
-            loadMore();
-          }
-        },
-        { threshold: 1 }
-      );
-      const pageEnd = loadingRef.current;
-      if (pageEnd) {
-        observer.observe(pageEnd);
-      }
-    }
-  }, [loading]);
-
   const loadMore = () => {
     setPageNumber(prev => prev + 1);
   };
+
+  let num = 1;
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => {
+        const [entry] = entries;
+        if (entry.isIntersecting) {
+          num++;
+          loadMore();
+          if(num >= 5 && loadingRef.current) observer.unobserve(loadingRef.current);
+        }
+      },
+      { threshold: 1 }
+    );
+    if (loadingRef.current) {
+      observer.observe(loadingRef.current);
+    }
+  return () => {
+    observer.disconnect();
+  }
+  }, [num]);
 
   return (
     <Container>
