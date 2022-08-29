@@ -2,7 +2,8 @@ import type { NextPage } from "next";
 import Image from "next/image";
 import styled from "styled-components";
 import { useRef } from "react";
-import useElementOnScreen from "../hooks/useElementOnScreen";
+import useElementOnScreen from "../src/hooks/useElementOnScreen";
+import profile from 'assets/images/profile.jpg'
 
 const Home: NextPage = () => {
   const targetRef = useRef(null);
@@ -21,7 +22,7 @@ const Home: NextPage = () => {
       <Gap />
       <ImageWrapper ref={targetRef}>
         <Image
-          src={"/images/profile.jpg"}
+          src={profile.src}
           alt="profile"
           width={500}
           height={500}
