@@ -4,6 +4,7 @@ import { useState } from "react";
 import axios from "axios";
 import styled, { keyframes } from "styled-components";
 import loadingImg from "assets/images/loading.gif";
+import useIntersect from 'hooks/useIntersect';
 
 export default function InfiniteScroll() {
   const [photos, setPhotos] = useState([]);
@@ -17,35 +18,18 @@ export default function InfiniteScroll() {
     );
     setPhotos(photo => photo.concat(data));
   };
+  const isFetch = useIntersect({
+    ref : loadingRef,
+  })
+
 
   useEffect(() => {
-    fetchPhotos(pageNumber);
-  }, [pageNumber]);
+    isFetch && fetchPhotos(pageNumber);
+  }, [isFetch, pageNumber]);
 
   const loadMore = () => {
     setPageNumber(prev => prev + 1);
   };
-
-  let num = 1;
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      entries => {
-        const [entry] = entries;
-        if (entry.isIntersecting) {
-          num++;
-          loadMore();
-          if(num >= 5 && loadingRef.current) observer.unobserve(loadingRef.current);
-        }
-      },
-      { threshold: 1 }
-    );
-    if (loadingRef.current) {
-      observer.observe(loadingRef.current);
-    }
-  return () => {
-    observer.disconnect();
-  }
-  }, [num]);
 
   return (
     <Container>
