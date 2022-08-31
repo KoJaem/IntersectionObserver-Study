@@ -2,12 +2,12 @@ import type { NextPage } from "next";
 import Image from "next/image";
 import styled from "styled-components";
 import { useRef } from "react";
-import useElementOnScreen from "../src/hooks/useElementOnScreen";
+import useIntersect from "../src/hooks/useIntersect";
 import profile from 'assets/images/profile.jpg'
 
 const Home: NextPage = () => {
   const targetRef = useRef(null);
-  const { isVisible } = useElementOnScreen({
+  const { isVisible } = useIntersect({
     targetRef,
     options: {
       root: null,

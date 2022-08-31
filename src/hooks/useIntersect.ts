@@ -1,94 +1,39 @@
-import { useState, useRef, useEffect, MutableRefObject, useMemo } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 type Props = {
-  ref: MutableRefObject<Element | null>;
+  targetRef: React.MutableRefObject<null>;
   options?: IntersectionObserverInit;
+  limit? : number;
 };
-const useIntersect = ({ ref, options }: Props) => {
-  const [element, setElement] = useState<Element | null>(null);
-  const [isIntersecting, setIsIntersecting] = useState(false);
-  const observer = useRef<null | IntersectionObserver>(null);
+// 옵션값이 없을때 사용되는 기초적인값
+const initialOptions = {
+  root: null,
+  rootMargin: "0px",
+  threshold: 1,
+};
+const useIntersect = ({ targetRef, options = initialOptions }: Props) => {
+  const [isVisible, setVisible] = useState(false);
 
-  const cleanOb = () => {
-    if (observer.current) {
-      observer.current.disconnect();
-    }
+  const callbackFunction = (entries: IntersectionObserverEntry[]) => {
+    const [entry] = entries;
+    setVisible(entry.isIntersecting);
   };
 
-  useEffect(() => {
-    setElement(ref.current);
-  }, [ref]);
+  const optionsMemo = useMemo(() => {
+    return options;
+  }, [options]);
 
   useEffect(() => {
-    if (!element) return;
-    cleanOb();
-    const ob = (observer.current = new IntersectionObserver(
-      ([entry]) => {
-        const isElementIntersecting = entry.isIntersecting;
-        if (!isIntersecting && isElementIntersecting) {
-          cleanOb();
-        }
-        setIsIntersecting(isElementIntersecting);
-      },
-      { ...options }
-    ));
-    ob.observe(element);
+    
+    const observer = new IntersectionObserver(callbackFunction, optionsMemo);
+    const currentTarget = targetRef.current;
+    if (currentTarget) observer.observe(currentTarget);
+
     return () => {
-      cleanOb();
+      if (currentTarget) observer.unobserve(currentTarget);
     };
-  }, [element, options, isIntersecting]);
-  // forward, isIntersecting;
+  }, [targetRef, optionsMemo]);
 
-  return isIntersecting;
+  return { isVisible };
 };
 
 export default useIntersect;
-
-
-// // forward 까지 받아오는 예제 
-// import { useState, useRef, useEffect, MutableRefObject, useMemo } from "react";
-// type Props = {
-//   ref: MutableRefObject<Element | null>;
-//   forward?: boolean;
-//   options?: IntersectionObserverInit;
-// };
-// const useIntersect = ({ ref, forward = true, options }: Props) => {
-//   const [element, setElement] = useState<Element | null>(null);
-//   const [isIntersecting, setIsIntersecting] = useState(false);
-//   const observer = useRef<null | IntersectionObserver>(null);
-
-//   const cleanOb = () => {
-//     if (observer.current) {
-//       observer.current.disconnect();
-//     }
-//   };
-
-//   useEffect(() => {
-//     setElement(ref.current);
-//   }, [ref]);
-
-//   useEffect(() => {
-//     if (!element) return;
-//     cleanOb();
-//     const ob = (observer.current = new IntersectionObserver(
-//       ([entry]) => {
-//         const isElementIntersecting = entry.isIntersecting;
-//         if (!forward) {
-//           setIsIntersecting(isElementIntersecting);
-//         } else if (forward && !isIntersecting && isElementIntersecting) {
-//           setIsIntersecting(isElementIntersecting);
-//           cleanOb();
-//         }
-//       },
-//       { ...options }
-//     ));
-//     ob.observe(element);
-//     return () => {
-//       cleanOb();
-//     };
-//   }, [element, options, forward, isIntersecting]);
-//   // forward, isIntersecting;
-
-//   return isIntersecting;
-// };
-
-// export default useIntersect;

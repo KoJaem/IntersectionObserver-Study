@@ -4,7 +4,8 @@ import { useState } from "react";
 import axios from "axios";
 import styled, { keyframes } from "styled-components";
 import loadingImg from "assets/images/loading.gif";
-import useIntersect from 'hooks/useIntersect';
+
+import useIntersect from "../src/hooks/useIntersect";
 
 export default function InfiniteScroll() {
   const [photos, setPhotos] = useState([]);
@@ -18,14 +19,13 @@ export default function InfiniteScroll() {
     );
     setPhotos(photo => photo.concat(data));
   };
-  const isFetch = useIntersect({
-    ref : loadingRef,
-  })
+
+  const { isVisible } = useIntersect({ targetRef: loadingRef });
 
 
   useEffect(() => {
-    isFetch && fetchPhotos(pageNumber);
-  }, [isFetch, pageNumber]);
+    isVisible && fetchPhotos(pageNumber);
+  }, [isVisible, pageNumber]);
 
   const loadMore = () => {
     setPageNumber(prev => prev + 1);
